@@ -9,4 +9,4 @@ A simple application that compares weather in the user's location with the weath
 - CSS Framework: Tailwind CSS
 - Hosting Platform: Vercel
 
-The application is deployed at: [inverse-weather.vercel.app](inverse-weather.vercel.app)
+The application is deployed at: [inverse-weather.vercel.app](https://inverse-weather.vercel.app)

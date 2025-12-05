@@ -2,16 +2,15 @@
 import Image from "next/image";
 import {useEffect,useState} from 'react';
 import { fetchWeatherData } from '@/lib/weather-api';
-import { fetchArticleSummary } from "@/lib/wikimedia-api";
 import { geolocation } from '@/lib/geolocation';
 import dynamic from "next/dynamic";
 const Map = dynamic(() => import('./components/Map'), {ssr:false});
+import WeatherDisplay from "./components/WeatherDisplay";
 
 export default function Home() {
 
   const [lat,setLat] = useState<number | null>(null);
   const [lon,setLon] = useState<number | null>(null);
-  const [page,setPage] = useState<any>(null);
   const [weather,setWeather] = useState<any>(null);
   const [inverseWeather,setInverseWeather] = useState<any>(null);
 
@@ -42,20 +41,7 @@ export default function Home() {
     load();
   }, []);
 
-  useEffect(() => {
-    async function load(){
-      try{
-        const page = await fetchArticleSummary('Antipodes');
-        setPage(page);
-        console.log(page);
-      }catch(error){
-        console.error(error);
-      }
-    }
-    load();
-  },[]);
-
-  if (lat == null || lon == null || weather == null || inverseWeather == null || page == null){
+  if (lat == null || lon == null || weather == null || inverseWeather == null){
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -65,15 +51,15 @@ export default function Home() {
     )
   }
 
-  if (weather.name == ""){
-    weather.name = "Unknown"
-  }
-  if (inverseWeather.name == ""){
-    inverseWeather.name = "Unknown"
-  }
-
   const invlat = -lat;
   const invlon = 180-Math.abs(lon);
+
+  if (weather.name == ""){
+    weather.name = `${lat.toFixed(4)}, ${lon.toFixed(4)}`
+  }
+  if (inverseWeather.name == ""){
+    inverseWeather.name = `${invlat.toFixed(4)}, ${invlon.toFixed(4)}`
+  }
 
   return (
     <div className="flex min-h-screen font-sans">
@@ -82,26 +68,17 @@ export default function Home() {
 
         <div className="flex flex-row">
           <div className="flex flex-col mx-4">
-            <Image src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} width={100} height={100} alt='weather icon'/>
-            <span>Your Location: {weather.name}</span>
-            <span>Description: {weather.weather[0].description}</span>
-            <span>Temperature: {weather.main.temp}°</span>
-            <span>Feels Like: {weather.main.feels_like}°</span>
-            <span>Humidity: {weather.main.humidity}%</span>
+
+            <WeatherDisplay location={weather.name} description={weather.weather[0].description} temperature={weather.main.temp} feels_like={weather.main.feels_like} humidity={weather.main.humidity} icon={weather.weather[0].icon} antipode={false} ></WeatherDisplay>
             
-            <Map lat={lat} lon={lon} zoom={10} ></Map>
+            <Map lat={lat} lon={lon} zoom={5} ></Map>
+
           </div>
           <div className="flex flex-col mx-4">
-            <Image src={`https://openweathermap.org/img/wn/${inverseWeather.weather[0].icon}@2x.png`} width={100} height={100} alt='weather icon'/>
-            <span>Your Antipode: {inverseWeather.name}</span>
-            <span>Description: {inverseWeather.weather[0].description}</span>
-            <span>Temperature: {inverseWeather.main.temp}°</span>
-            <span>Feels Like: {inverseWeather.main.feels_like}°</span>
-            <span>Humidity: {inverseWeather.main.humidity}%</span>
+            
+            <WeatherDisplay location={inverseWeather.name} description={inverseWeather.weather[0].description} temperature={inverseWeather.main.temp} feels_like={inverseWeather.main.feels_like} humidity={inverseWeather.main.humidity} icon={inverseWeather.weather[0].icon} antipode={true} ></WeatherDisplay>
 
-            <Map lat={invlat} lon={invlon} zoom={10} ></Map>
-
-
+            <Map lat={invlat} lon={invlon} zoom={5} ></Map>
 
           </div>
         </div>
